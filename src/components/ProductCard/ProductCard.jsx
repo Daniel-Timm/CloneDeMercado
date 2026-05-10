@@ -1,123 +1,117 @@
 import React, { useState } from 'react';
 import { ofertasDoDia } from "../../data/Product";
-import { UsbDriveFill } from "react-bootstrap-icons";
 
 const ProductCard = ({ item }) => {
   const [quantidade, setQuantidade] = useState(0);
-  const [posicao, setPosicao] = useState(0);
+
   const precoFormatado = item.precoAtual.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-
   });
+
   const precoFormatado2 = item.precoOriginal.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-
   });
+
   const porcentagem = Math.round((item.precoOriginal - item.precoAtual) / item.precoOriginal * 100);
+
   return (
-    <div key={item.id} className="card h-100 border flex-shrink-0"
-      style={{ cursor: 'pointer', width: '180px', minWidth: '180px', height: '100px', position: 'relative' }} >
+    <div className="card h-100 border-light shadow-sm flex-shrink-0"
+      style={{ width: '200px', minWidth: '200px', position: 'relative', borderRadius: '10px', overflow: 'hidden' }} >
 
-      <div className="divImage">
-        <span
-          style={{
-            position: "absolute",
-            right: 5,
-            top: 2,
-            padding: "1px 5px",
-            borderRadius: '10px',
-            color: 'white',
-            fontWeight: 'bold',
-            backgroundColor: 'red',
-            fontSize: '12px'
+      <span
+        style={{
+          position: "absolute",
+          right: 8,
+          top: 8,
+          padding: "2px 8px",
+          borderRadius: '5px',
+          color: 'white',
+          fontWeight: 'bold',
+          backgroundColor: 'red',
+          fontSize: '11px',
+          zIndex: 2
+        }}>{porcentagem}% off</span>
 
-          }}>{porcentagem}%off</span>
-        <img src={item.urlImagem}
+      <div className="d-flex justify-content-center align-items-center bg-white" style={{ height: '180px' }}>
+        <img 
+          src={item.urlImagem}
           style={{
-            height: "160px",
-            width: '160px',
+            maxHeight: "150px",
+            maxWidth: '100%',
             objectFit: 'contain',
-            padding: '5px',
-
-
           }}
-          alt="Imagem do profuto${item.nome}" />
+          alt={`Imagem do produto ${item.nome}`} 
+        />
       </div>
-      <div style={{ padding: '3px' }} className="card-body d-flex flex-column">
 
-        <h3 className="" style={{
-
+      <div className="card-body d-flex flex-column p-3">
+        <h3 style={{
           display: '-webkit-box',
           WebkitLineClamp: '2',
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
-          height: '3rem',
-          fontSize: 14,
-          textTransform: "capitalize",
-          textOverflow: 'ellipsis',
-          height: '3rem',
-          marginTop: 0,
-          color: '#333333',
-
-
+          fontSize: '14px',
+          height: '2.4rem',
+          lineHeight: '1.2rem',
+          color: '#333',
+          marginBottom: '8px'
         }}>{item.nome}</h3>
-        <h3 style={{
-          fontSize: 22,
-          fontWeight: "bold",
-          marginTop: 3,
-        }}>{precoFormatado}</h3>
-        <h3 style={{
-          fontSize: 12,
-          textDecoration: "line-through",
-          color: 'gray'
-        }}>{precoFormatado2}</h3>
-        <div className="d-flex gap-4 button">
-          {quantidade === 0 ? (
-            <button 
-              onClick={() => setQuantidade(quantidade + 1)} 
-              style={{ color: 'white', backgroundColor: '#a5c361' }} 
-              className="btn w-100 shadow-sm gap-4 d-flex align-items-center mt-auto"
-            >
-              <i className="bi bi-cart3"></i> Adicionar
-            </button>
-          ) : (
-            <div className="d-flex align-items-center justify-content-between w-100">
-              <button onClick={() => setQuantidade(quantidade - 1)} className="btn btn-sm btn-outline-secondary">-</button>
-              <span>{quantidade}</span>
-              <button onClick={() => setQuantidade(quantidade + 1)} className="btn btn-sm btn-outline-secondary">+</button>
-            </div>
-          )}
+
+        <div className="mt-auto">
+          <h3 style={{
+            fontSize: '20px',
+            fontWeight: "bold",
+            margin: '0',
+            color: '#000'
+          }}>{precoFormatado}</h3>
+          
+          <h3 style={{
+            fontSize: '12px',
+            textDecoration: "line-through",
+            color: '#999',
+            marginBottom: '12px'
+          }}>{precoFormatado2}</h3>
+
+          <div className="d-flex w-100">
+            {quantidade === 0 ? (
+              <button 
+                onClick={() => setQuantidade(1)} 
+                style={{ color: 'white', backgroundColor: '#a5c361', border: 'none' }} 
+                className="btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2"
+              >
+                <i className="bi bi-cart3"></i> ADICIONAR
+              </button>
+            ) : (
+              <div className="d-flex align-items-center justify-content-between w-100 border rounded py-1 px-2" style={{ backgroundColor: '#f8f9fa' }}>
+                <button onClick={() => setQuantidade(quantidade - 1)} className="btn btn-sm p-0 border-0 fw-bold">-</button>
+                <span className="fw-bold">{quantidade}</span>
+                <button onClick={() => setQuantidade(quantidade + 1)} className="btn btn-sm p-0 border-0 fw-bold text-success">+</button>
+              </div>
+            )}
+          </div>
         </div>
       </div> 
     </div>   
   );
 };
-      function OfertasSeçao() {
 
+function OfertasSeçao() {
   return (
-
-
-      <div className=" container d-flex flex-column gap-1">
-        <div className="">
-          <div className="col border-bottom pb-2 fw-bold fs-3 pt-4">Ofertas do dia</div>
-        </div>
-        <div className="d-flex overflow-x-auto gap-1 pt-5 pb-3 custom-scrollbar">
-
-          {
-
-
-            ofertasDoDia.map((item) => {
-
-
-              return (
-                <ProductCard key={item.id} item={item} />
-              );
-            })
-          }
-        </div>
+    <div className="container d-flex flex-column gap-3 py-4">
+      <div className="d-flex justify-content-between align-items-end border-bottom pb-2">
+        <div className="fw-bold fs-3">Ofertas do Dia</div>
+        <button className="btn btn-primary btn-sm rounded-3 px-3">Ver todos</button>
       </div>
-      );
+      
+      <div className="d-flex flex-nowrap overflow-x-auto gap-3 pb-3 custom-scrollbar">
+        {ofertasDoDia.map((item) => (
+          <ProductCard key={item.id} item={item} />
+        ))}
+      </div>
+    </div>
+  );
 }
-      export default OfertasSeçao;
+
+export default OfertasSeçao;

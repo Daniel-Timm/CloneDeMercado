@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ofertasDoDia } from "../../data/Product";
 
 const ProductCard = ({ item }) => {
   const [quantidade, setQuantidade] = useState(0);
@@ -75,20 +74,30 @@ const ProductCard = ({ item }) => {
           }}>{precoFormatado2}</h3>
 
           <div className="d-flex w-100">
-            {quantidade === 0 ? (
-              <button 
-                onClick={() => setQuantidade(1)} 
-                style={{ color: 'white', backgroundColor: '#a5c361', border: 'none' }} 
-                className="btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2"
-              >
-                <i className="bi bi-cart3"></i> ADICIONAR
-              </button>
+            {item.estoque > 0 ? (
+              quantidade === 0 ? (
+                <button 
+                  onClick={() => setQuantidade(1)} 
+                  style={{ color: 'white', backgroundColor: '#a5c361', border: 'none' }} 
+                  className="btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2"
+                >
+                  <i className="bi bi-cart3"></i> ADICIONAR
+                </button>
+              ) : (
+                <div className="d-flex align-items-center justify-content-between w-100 border rounded py-1 px-2" style={{ backgroundColor: '#f8f9fa' }}>
+                  <button onClick={() => setQuantidade(Math.max(0, quantidade - 1))} className="btn btn-sm p-0 border-0 fw-bold">-</button>
+                  <span className="fw-bold">{quantidade}</span>
+                  <button onClick={() => setQuantidade(quantidade + 1)} className="btn btn-sm p-0 border-0 fw-bold text-success">+</button>
+                </div>
+              )
             ) : (
-              <div className="d-flex align-items-center justify-content-between w-100 border rounded py-1 px-2" style={{ backgroundColor: '#f8f9fa' }}>
-                <button onClick={() => setQuantidade(quantidade - 1)} className="btn btn-sm p-0 border-0 fw-bold">-</button>
-                <span className="fw-bold">{quantidade}</span>
-                <button onClick={() => setQuantidade(quantidade + 1)} className="btn btn-sm p-0 border-0 fw-bold text-success">+</button>
-              </div>
+              <button 
+                disabled 
+                style={{ color: 'white', backgroundColor: '#ccc', border: 'none', cursor: 'not-allowed' }} 
+                className="btn w-100 fw-bold py-2"
+              >
+                INDISPONÍVEL
+              </button>
             )}
           </div>
         </div>
@@ -97,21 +106,4 @@ const ProductCard = ({ item }) => {
   );
 };
 
-function OfertasSeçao() {
-  return (
-    <div className="container d-flex flex-column gap-3 py-4">
-      <div className="d-flex justify-content-between align-items-end border-bottom pb-2">
-        <div className="fw-bold fs-3">Ofertas do Dia</div>
-        <button className="btn btn-primary btn-sm rounded-3 px-3">Ver todos</button>
-      </div>
-      
-      <div className="d-flex flex-nowrap overflow-x-auto gap-3 pb-3 custom-scrollbar">
-        {ofertasDoDia.map((item) => (
-          <ProductCard key={item.id} item={item} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default OfertasSeçao;
+export default ProductCard;

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Carousel } from 'bootstrap';
+import { api } from '../../services/api';
 
 import banner1 from '../../assets/banner1.png';
 import banner2 from '../../assets/banner2.png';
@@ -8,36 +9,74 @@ import banner4 from '../../assets/banner4.png';
 import banner5 from '../../assets/banner5.png';
 import banner6 from '../../assets/banner6.png';
 
+const BANNERS_FALLBACK = [
+    { id: 'local-1', imagemUrl: banner1, titulo: 'Banner 1', linkUrl: null },
+    { id: 'local-2', imagemUrl: banner2, titulo: 'Banner 2', linkUrl: null },
+    { id: 'local-3', imagemUrl: banner3, titulo: 'Banner 3', linkUrl: null },
+    { id: 'local-4', imagemUrl: banner4, titulo: 'Banner 4', linkUrl: null },
+    { id: 'local-5', imagemUrl: banner5, titulo: 'Banner 5', linkUrl: null },
+    { id: 'local-6', imagemUrl: banner6, titulo: 'Banner 6', linkUrl: null },
+];
+
 function Banner() {
+    const [banners, setBanners] = useState(BANNERS_FALLBACK);
     const [activeIndex, setActiveIndex] = useState(0);
     const carouselRef = useRef(null);
     const instanceRef = useRef(null);
 
     useEffect(() => {
-        if (carouselRef.current) {
-            const bootstrapCarousel = new Carousel(carouselRef.current, {
-                interval: 4000,
-                ride: 'carousel',
-                pause: 'hover'
-            });
+        async function carregarBanners() {
+            try {
+                const dados = await api.listarBanners();
+                if (Array.isArray(dados) && dados.length > 0) {
+                    const ativos = dados
+                        .filter((b) => b.ativo !== false)
+                        .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+                        .map((b, idx) => ({
+                            id: b.id ?? `api-${idx}`,
+                            imagemUrl: b.imagemUrl,
+                            titulo: b.titulo || `Banner ${idx + 1}`,
+                            linkUrl: b.linkUrl || null,
+                        }));
 
-            instanceRef.current = bootstrapCarousel;
-
-            const handleSlide = (event) => {
-                setActiveIndex(event.to);
-            };
-
-            carouselRef.current.addEventListener('slid.bs.carousel', handleSlide);
-
-            return () => {
-                if (carouselRef.current) {
-                    carouselRef.current.removeEventListener('slid.bs.carousel', handleSlide);
+                    if (ativos.length > 0) {
+                        setBanners(ativos);
+                        setActiveIndex(0);
+                    }
                 }
-            };
+            } catch {
+                // Mantém BANNERS_FALLBACK caso a API não responda
+            }
         }
+
+        carregarBanners();
     }, []);
 
-    const banners = [banner1, banner2, banner3, banner4, banner5, banner6];
+    useEffect(() => {
+        const el = carouselRef.current;
+        if (!el) return;
+
+        instanceRef.current?.dispose();
+
+        const bootstrapCarousel = new Carousel(el, {
+            interval: 4000,
+            ride: 'carousel',
+            pause: 'hover'
+        });
+
+        instanceRef.current = bootstrapCarousel;
+
+        const handleSlide = (event) => {
+            setActiveIndex(event.to);
+        };
+
+        el.addEventListener('slid.bs.carousel', handleSlide);
+
+        return () => {
+            el.removeEventListener('slid.bs.carousel', handleSlide);
+            bootstrapCarousel.dispose();
+        };
+    }, [banners]);
 
     return (
         <div className="container mt-4" style={{ position: 'relative', padding: '0 50px' }}>
@@ -57,7 +96,8 @@ function Banner() {
                 >
                     {banners.map((_, index) => (
                         <button
-                            key={index}
+                            key={banners[index].id}
+                            type="button"
                             onClick={() => instanceRef.current?.to(index)}
                             style={{
                                 width: '12px',
@@ -67,7 +107,6 @@ function Banner() {
                                 backgroundColor: activeIndex === index ? '#004a8e' : 'rgba(255,255,255,0.8)',
                                 cursor: 'pointer',
                                 transition: '0.3s',
-                                
                                 padding: 0
                             }}
                             aria-label={`Slide ${index + 1}`}
@@ -75,11 +114,24 @@ function Banner() {
                     ))}
                 </div>
 
-
                 <div className="carousel-inner rounded shadow-sm">
-                    {banners.map((img, index) => (
-                        <div key={index} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
-                            <img src={img} className="d-block w-100" alt={`Banner ${index + 1}`} />
+                    {banners.map((banner, index) => (
+                        <div key={banner.id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
+                            {banner.linkUrl ? (
+                                <a href={banner.linkUrl}>
+                                    <img
+                                        src={banner.imagemUrl}
+                                        className="d-block w-100"
+                                        alt={banner.titulo}
+                                    />
+                                </a>
+                            ) : (
+                                <img
+                                    src={banner.imagemUrl}
+                                    className="d-block w-100"
+                                    alt={banner.titulo}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>
@@ -95,47 +147,47 @@ function Banner() {
                         style={{
                             width: '35px',
                             height: '35px',
-                            backgroundColor: 'white', 
-                            color: 'black',           
+                            backgroundColor: 'white',
+                            color: 'black',
                             borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '15px',        
-                            boxShadow: '0px 4px 10px rgb(0, 0, 0) ' 
+                            fontSize: '15px',
+                            boxShadow: '0px 4px 10px rgb(0, 0, 0)'
                         }}
                     >
-                        <i className="bi bi-chevron-left" style={{ WebkitTextStroke: '1px black' }}></i> 
+                        <i className="bi bi-chevron-left" style={{ WebkitTextStroke: '1px black' }}></i>
                     </span>
                     <span className="visually-hidden">Anterior</span>
                 </button>
-                <button 
-    className="carousel-control-next" 
-    type="button" 
-    data-bs-target="#carouselTreichel" 
-    data-bs-slide="next"
-    style={{ width: 'auto', right: '-20px' }} 
->
-    <span 
-        style={{ 
-            width: '35px', 
-            height: '35px', 
-            backgroundColor: 'white', 
-            color: 'black', 
-            fontWeight: 'bold',
 
-            borderRadius: '50%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            fontSize: '15px',
-            boxShadow: '0 2px 5px rgb(0, 0, 0)'
-        }}
-    >
-        <i className="bi bi-chevron-right" style={{ WebkitTextStroke: '1px black' }}></i> 
-    </span>
-    <span className="visually-hidden">Próximo</span>
-</button>
+                <button
+                    className="carousel-control-next"
+                    type="button"
+                    data-bs-target="#carouselTreichel"
+                    data-bs-slide="next"
+                    style={{ width: 'auto', right: '-20px' }}
+                >
+                    <span
+                        style={{
+                            width: '35px',
+                            height: '35px',
+                            backgroundColor: 'white',
+                            color: 'black',
+                            fontWeight: 'bold',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '15px',
+                            boxShadow: '0 2px 5px rgb(0, 0, 0)'
+                        }}
+                    >
+                        <i className="bi bi-chevron-right" style={{ WebkitTextStroke: '1px black' }}></i>
+                    </span>
+                    <span className="visually-hidden">Próximo</span>
+                </button>
             </div>
         </div>
     );

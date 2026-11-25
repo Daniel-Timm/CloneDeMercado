@@ -40,11 +40,13 @@ async function buscar(endpoint, options = {}) {
 }
 
 export const api = {
+  // Leitura pública
   listarProdutos: () => buscar('/produtos'),
   listarCategorias: () => buscar('/categorias'),
   listarColecoes: () => buscar('/colecoes'),
   listarBanners: () => buscar('/banners'),
 
+  // Autenticação
   login: async (email, senha) => {
     const data = await buscar('/auth/login', {
       method: 'POST',
@@ -64,24 +66,40 @@ export const api = {
       body: JSON.stringify(payload),
     }),
 
+  // Categorias (ADMIN)
   criarCategoria: (payload) =>
     buscar('/categorias', { method: 'POST', body: JSON.stringify(payload) }),
   deletarCategoria: (id) =>
     buscar(`/categorias/${id}`, { method: 'DELETE' }),
 
+  // Produtos (ADMIN)
   criarProduto: (payload) =>
     buscar('/produtos', { method: 'POST', body: JSON.stringify(payload) }),
+  atualizarProduto: (id, payload) =>
+    buscar(`/produtos/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deletarProduto: (id) =>
+    buscar(`/produtos/${id}`, { method: 'DELETE' }),
 
+  // Banners (ADMIN)
   criarBanner: (payload) =>
     buscar('/banners', { method: 'POST', body: JSON.stringify(payload) }),
   deletarBanner: (id) =>
     buscar(`/banners/${id}`, { method: 'DELETE' }),
 
+  // Coleções (ADMIN)
   criarColecao: (payload) =>
     buscar('/colecoes', { method: 'POST', body: JSON.stringify(payload) }),
+  atualizarColecao: (id, payload) =>
+    buscar(`/colecoes/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deletarColecao: (id) =>
+    buscar(`/colecoes/${id}`, { method: 'DELETE' }),
   vincularProdutoColecao: (colecaoId, produtoId) =>
     buscar(`/colecoes/${colecaoId}/produtos`, {
       method: 'POST',
       body: JSON.stringify({ produtoId }),
+    }),
+  desvincularProdutoColecao: (colecaoId, produtoId) =>
+    buscar(`/colecoes/${colecaoId}/produtos/${produtoId}`, {
+      method: 'DELETE',
     }),
 };

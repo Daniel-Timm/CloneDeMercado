@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { Carousel } from 'bootstrap';
 import { api } from '../../services/api';
@@ -18,19 +19,37 @@ const BANNERS_FALLBACK = [
     { id: 'local-6', imagemUrl: banner6, titulo: 'Banner 6', linkUrl: null },
 ];
 
-function Banner() {
+function Banner({ banners: bannersProp }) {
     const [banners, setBanners] = useState(BANNERS_FALLBACK);
     const [activeIndex, setActiveIndex] = useState(0);
     const carouselRef = useRef(null);
     const instanceRef = useRef(null);
 
     useEffect(() => {
+        if (Array.isArray(bannersProp)) {
+            if (bannersProp.length > 0) {
+                setBanners(
+                    bannersProp.map((b, idx) => ({
+                        id: b.id ?? `prop-${idx}`,
+                        imagemUrl: b.imagemUrl,
+                        titulo: b.titulo || `Banner ${idx + 1}`,
+                        linkUrl: b.linkUrl || null,
+                    }))
+                );
+                setActiveIndex(0);
+            } else {
+                setBanners(BANNERS_FALLBACK);
+                setActiveIndex(0);
+            }
+            return;
+        }
+
         async function carregarBanners() {
             try {
                 const dados = await api.listarBanners();
                 if (Array.isArray(dados) && dados.length > 0) {
-                    const ativos = dados
-                        .filter((b) => b.ativo !== false)
+                    const topo = dados
+                        .filter((b) => b.ativo !== false && Number(b.ordem ?? 1) === 1)
                         .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
                         .map((b, idx) => ({
                             id: b.id ?? `api-${idx}`,
@@ -39,8 +58,8 @@ function Banner() {
                             linkUrl: b.linkUrl || null,
                         }));
 
-                    if (ativos.length > 0) {
-                        setBanners(ativos);
+                    if (topo.length > 0) {
+                        setBanners(topo);
                         setActiveIndex(0);
                     }
                 }
@@ -50,7 +69,7 @@ function Banner() {
         }
 
         carregarBanners();
-    }, []);
+    }, [bannersProp]);
 
     useEffect(() => {
         const el = carouselRef.current;

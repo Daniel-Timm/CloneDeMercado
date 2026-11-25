@@ -6,6 +6,7 @@ import NavBar from './components/header/NavBar';
 import TopBar from './components/header/TopBar';
 import Banner from './components/home/Banner';
 import Sectors from './components/home/Sectors';
+import PromoBannersGrid from './components/home/PromoBannersGrid';
 import ProductSection from './components/ProductCard/ProductSection';
 import LoginPage from './components/auth/LoginPage';
 import AdminPanel from './components/admin/AdminPanel';
@@ -37,20 +38,41 @@ function App() {
   const [usuario, setUsuario] = useState(() => authStorage.getUsuario());
   const [secoesColecoes, setSecoesColecoes] = useState([]);
   const [produtosApi, setProdutosApi] = useState([]);
+  const [bannersGrid, setBannersGrid] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [bannersTopo, setBannersTopo] = useState([]);
+ 
 
   const carregarHome = useCallback(async () => {
     setCarregando(true);
     try {
-      const [colecoesData, produtosData] = await Promise.all([
+      const [colecoesData, produtosData, bannersData] = await Promise.all([
         api.listarColecoes().catch(() => []),
         api.listarProdutos().catch(() => []),
+        api.listarBanners().catch(() => []),
       ]);
 
       const listaProdutos = Array.isArray(produtosData)
         ? produtosData.map(normalizarProduto)
         : [];
       setProdutosApi(listaProdutos);
+
+      if (Array.isArray(bannersData)) {
+  const ativos = bannersData
+    .filter((b) => b.ativo !== false)
+    .sort((a, b) => Number(a.ordem) - Number(b.ordem));
+
+  const topo = ativos.filter((b) => Number(b.ordem) === 1);
+  const secundarios = ativos.filter((b) => Number(b.ordem) >= 2);
+
+  setBannersTopo(topo.length > 0 ? topo : ativos.slice(0, 1));
+  setBannersGrid(secundarios);
+} else {
+  setBannersTopo([]);
+  setBannersGrid([]);
+}
+      
+
 
       if (Array.isArray(colecoesData) && colecoesData.length > 0) {
         const formatadas = colecoesData
@@ -124,20 +146,34 @@ function App() {
           <AdminPanel onVoltarHome={irParaHome} />
         ) : (
           <>
-            <Banner />
+            <Banner  banners={bannersTopo}/>
             <Sectors />
 
             {carregando ? (
               <div className="container py-4 text-muted">Carregando ofertas...</div>
             ) : temColecoesComProdutos ? (
-              secoesColecoes.map((secao) => (
-                <ProductSection key={secao.id} titulo={secao.titulo} lista={secao.lista} />
-              ))
+              <>
+                <ProductSection
+                  key={secoesColecoes[0].id}
+                  titulo={secoesColecoes[0].titulo}
+                  lista={secoesColecoes[0].lista}
+                />
+
+                <PromoBannersGrid banners={bannersGrid} />
+
+                {secoesColecoes.slice(1).map((secao) => (
+                  <ProductSection key={secao.id} titulo={secao.titulo} lista={secao.lista} />
+                ))}
+              </>
             ) : temProdutosAvulsos ? (
-              <ProductSection titulo="Produtos em Destaque" lista={produtosApi} />
+              <>
+                <ProductSection titulo="Produtos em Destaque" lista={produtosApi} />
+                <PromoBannersGrid banners={bannersGrid} />
+              </>
             ) : (
               <>
                 <ProductSection titulo="Ofertas do Dia" lista={ofertasDoDia} />
+                <PromoBannersGrid banners={bannersGrid} />
                 <ProductSection titulo="Descontos especiais" lista={descontosEspeciais} />
               </>
             )}

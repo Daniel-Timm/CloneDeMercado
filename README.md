@@ -4,4 +4,5 @@ Projeto de uma vitrine de ofertas desenvolvido para colocar em prática conceito
 
 Tech Stack: React, JavaScript (ES6+), Bootstrap 5.
 
-Status: Em desenvolvimento (Integração com Backend em Typescript).
+Status: FrontEnd em desenvolvimento avançado. 
+Integração com Backend em Typescript concluída.
